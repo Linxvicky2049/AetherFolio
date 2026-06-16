@@ -1,0 +1,95 @@
+import { Institution } from "../types";
+
+export const PRESET_INSTITUTIONS: Institution[] = [
+  {
+    id: "inst-stanford-01",
+    name: "Stanford University",
+    type: "University",
+    regCode: "US-CA-EDU-94305",
+    website: "https://www.stanford.edu",
+    contactEmail: "registrar@stanford.edu",
+    contactPhone: "+1 (650) 723-2300",
+    status: "Accredited",
+    authorityRank: "Western Association of Schools and Colleges (WASC)",
+    signatoryName: "Dean Richard H. Shaw",
+    officeAddress: "450 Jane Stanford Way, Stanford, CA 94305, United States"
+  },
+  {
+    id: "inst-mit-02",
+    name: "Massachusetts Institute of Technology (MIT)",
+    type: "University",
+    regCode: "US-MA-EDU-02139",
+    website: "https://www.mit.edu",
+    contactEmail: "registrar-office@mit.edu",
+    contactPhone: "+1 (617) 253-1000",
+    status: "Accredited",
+    authorityRank: "New England Commission of Higher Education (NECHE)",
+    signatoryName: "Registrar Elizabeth Young",
+    officeAddress: "77 Massachusetts Ave, Cambridge, MA 02139, United States"
+  },
+  {
+    id: "inst-google-03",
+    name: "Google LLC",
+    type: "Company",
+    regCode: "US-DE-CORP-35811",
+    website: "https://about.google",
+    contactEmail: "verify-employment@google.com",
+    contactPhone: "+1 (160) 090-0000",
+    status: "Verified Enterprise",
+    authorityRank: "SEC Registered Global Tech Enterprise",
+    signatoryName: "VP of People Operations, Fiona Kelly",
+    officeAddress: "1600 Amphitheatre Pkwy, Mountain View, CA 94043, United States"
+  },
+  {
+    id: "inst-openai-04",
+    name: "OpenAI Inc.",
+    type: "Company",
+    regCode: "US-CA-CORP-49912",
+    website: "https://openai.com",
+    contactEmail: "jobs-verify@openai.com",
+    contactPhone: "+1 (415) 555-0199",
+    status: "Verified Enterprise",
+    authorityRank: "AI Research & Commercial Deployment Corp",
+    signatoryName: "Head of People Operations, Sarah Davis",
+    officeAddress: "3180 18th St, San Francisco, CA 94110, United States"
+  },
+  {
+    id: "inst-gcp-05",
+    name: "Google Cloud Credentials Board",
+    type: "Certification Board",
+    regCode: "CERT-GCP-88302",
+    website: "https://cloud.google.com/certification",
+    contactEmail: "training-support@google.com",
+    contactPhone: "+1 (180) 055-1212",
+    status: "Accredited",
+    authorityRank: "Google Cloud Certified Global Authority",
+    signatoryName: "Certification Program Director, Marcus Vance",
+    officeAddress: "111 8th Ave, New York, NY 10011, United States"
+  },
+  {
+    id: "inst-oxford-06",
+    name: "University of Oxford",
+    type: "University",
+    regCode: "UK-OX-EDU-OX1",
+    website: "https://www.ox.ac.uk",
+    contactEmail: "academic.records@admin.ox.ac.uk",
+    contactPhone: "+44 1865 270000",
+    status: "Accredited",
+    authorityRank: "UK Office for Students Approved",
+    signatoryName: "Registrar Dr. Gillian Easton",
+    officeAddress: "University Offices, Wellington Square, Oxford, OX1 2JD, United Kingdom"
+  },
+  {
+    id: "inst-microsoft-07",
+    name: "Microsoft Corporation",
+    type: "Company",
+    regCode: "US-WA-CORP-60032",
+    website: "https://www.microsoft.com",
+    contactEmail: "staff-verification@microsoft.com",
+    contactPhone: "+1 (425) 882-8080",
+    status: "Verified Enterprise",
+    authorityRank: "SEC Registered Tech Conglomerate",
+    signatoryName: "HR Director, Kathleen Campbell",
+    officeAddress: "One Microsoft Way, Redmond, WA 98052, United States"
+  }
+];

@@ -1,0 +1,6 @@
+{
+  "name": "Interactive Secure Portfolio",
+  "description": "A secure client-side encrypted interactive portfolio with recruiter verification, school lookups, and downloadable credentials.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
