@@ -41,7 +41,7 @@ export default function CredentialVault({
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputtedPassword.trim().length < 4) {
-      alert("Master Security Passkey must be at least 4 characters.");
+      alert("Vault password must be at least 4 characters.");
       return;
     }
     setMasterPassword(inputtedPassword);
@@ -49,7 +49,7 @@ export default function CredentialVault({
   };
 
   const handleResetPasskey = () => {
-    if (confirm("Resetting your active session passkey will lock existing credential entries until you re-authenticate. Proceed?")) {
+    if (confirm("Locking the vault will hide all decrypted documents until you enter your password again. Proceed?")) {
       setMasterPassword("");
       setInputtedPassword("");
       setIsPassKeyUnlocked(false);
@@ -88,7 +88,7 @@ export default function CredentialVault({
   // Modern Browser File processing and Cryptographic encryption
   const processAndEncryptFile = (file: File) => {
     if (!isPassKeyUnlocked || !masterPassword) {
-      alert("Please unlock/set your E2E Master Security Passkey before uploading confidential credentials.");
+      alert("Please set your Vault Password before uploading secure documents.");
       return;
     }
 
@@ -184,16 +184,16 @@ export default function CredentialVault({
 
   return (
     <div className="space-y-6">
-      {/* Cryptography Portal Gate */}
+      {/* Vault Password Control */}
       <GlassCard glowColor={isPassKeyUnlocked ? "blue" : "red"}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <h3 className="font-display text-2xl font-bold text-white flex items-center gap-2">
               <KeyRound className={`h-6 w-6 ${isPassKeyUnlocked ? "text-green-400 animate-pulse" : "text-bold-red"}`} />
-              Zero-Knowledge Encrypted Vault
+              Secure Document Vault
             </h3>
             <p className="text-gray-400 text-sm">
-              Authenticates academic certifications, student passports, and national ID cards with end-to-end symmetric encryption keys.
+              Securely store and view your academic certificates, ID cards, and transcripts. Your files are encrypted locally inside your browser.
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export default function CredentialVault({
               <div className="relative flex-1 md:w-60">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create Security Passkey..."
+                  placeholder="Set Vault Password..."
                   value={inputtedPassword}
                   onChange={(e) => setInputtedPassword(e.target.value)}
                   className="w-full bg-sleek-black/80 border border-white/10 rounded-xl py-2 px-3 pr-10 text-white text-xs font-mono focus:outline-none focus:border-deep-blue"
@@ -220,20 +220,20 @@ export default function CredentialVault({
                 className="bg-bold-red text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-bold-red/80 transition-all flex items-center gap-1.5"
               >
                 <Lock className="h-3.5 w-3.5" />
-                Initialize Key
+                Unlock Vault
               </button>
             </form>
           ) : (
             <div className="flex items-center gap-4 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-2xl">
               <div className="flex items-center gap-2 text-green-400">
                 <Unlock className="h-4 w-4" />
-                <span className="text-xs font-mono font-semibold">AES-256 Engine Active</span>
+                <span className="text-xs font-mono font-semibold">Secure Encryption Active</span>
               </div>
               <button
                 onClick={handleResetPasskey}
                 className="text-[10px] text-gray-400 hover:text-white uppercase font-bold tracking-wider"
               >
-                Reset Session
+                Lock Vault
               </button>
             </div>
           )}
@@ -243,7 +243,7 @@ export default function CredentialVault({
           <div className="mt-4 p-3 bg-sleek-black/40 border border-bold-red/20 rounded-xl text-[11px] text-red-300 flex items-start gap-2 max-w-2xl">
             <ShieldAlert className="h-4 w-4 text-bold-red mt-0.5 shrink-0" />
             <span>
-              <strong>Cryptographic Protection Alert:</strong> You must enter a master security passkey first. This passphrase initiates local 100,000 PBKDF2 iterations to seal sensitive files before they are encoded in transport. No records can be decrypted without this password.
+              <strong>Security Password Required:</strong> Set a master password first to encrypt and protect files locally in your browser. No files can be unlocked or decrypted without this password.
             </span>
           </div>
         )}
@@ -256,12 +256,12 @@ export default function CredentialVault({
             <GlassCard glowColor="orange" className="border-white/10">
               <h3 className="font-display font-semibold text-white text-base mb-4 flex items-center gap-2">
                 <UploadCloud className="text-vibrant-orange h-5 w-5" />
-                Deposit Secure Credentials
+                Upload Secure Documents
               </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-gray-400 text-xs block mb-1">Select Credential Category</label>
+                  <label className="text-gray-400 text-xs block mb-1">Select Document Category</label>
                   <select
                     value={selectedDocType}
                     onChange={(e) => setSelectedDocType(e.target.value as DocumentType)}
@@ -275,10 +275,10 @@ export default function CredentialVault({
                 </div>
 
                 <div>
-                  <label className="text-gray-400 text-xs block mb-1">Custom Credential Title</label>
+                  <label className="text-gray-400 text-xs block mb-1">Custom Document Title</label>
                   <input
                     type="text"
-                    placeholder="e.g. Stanford Scholar Identity"
+                    placeholder="e.g. Stanford Scholar Certificate"
                     value={customDocName}
                     onChange={(e) => setCustomDocName(e.target.value)}
                     disabled={!isPassKeyUnlocked}
@@ -287,14 +287,14 @@ export default function CredentialVault({
                 </div>
 
                 <div>
-                  <label className="text-gray-400 text-xs block mb-1">Authorized Certifying Authority List</label>
+                  <label className="text-gray-400 text-xs block mb-1">Linked Organization / Issuer</label>
                   <select
                     value={linkingInstitutionId}
                     onChange={(e) => setLinkingInstitutionId(e.target.value)}
                     disabled={!isPassKeyUnlocked}
                     className="w-full bg-sleek-black/60 border border-white/10 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-vibrant-orange disabled:opacity-50"
                   >
-                    <option value="">Select an Authority sector to verify claims...</option>
+                    <option value="">Select an organization to link this document...</option>
                     {institutions.map((inst) => (
                       <option key={inst.id} value={inst.id}>
                         {inst.name} ({inst.type})
@@ -327,7 +327,7 @@ export default function CredentialVault({
                   <FileSpreadsheet className="h-10 w-10 text-gray-500 mx-auto mb-2" />
                   
                   <p className="text-xs text-gray-300 font-semibold">
-                    Drag and drop credential dossier file here
+                    Drag and drop your file here
                   </p>
                   <p className="text-[10px] text-gray-500 mt-1 mb-3">
                     Supports JPG, PNG, PDF formats up to 10MB
@@ -339,7 +339,7 @@ export default function CredentialVault({
                     disabled={!isPassKeyUnlocked}
                     className="bg-vibrant-orange/95 hover:bg-vibrant-orange text-white text-[11px] font-bold py-2 px-4 rounded-xl transition-all"
                   >
-                    Locate Local File
+                    Choose File
                   </button>
                 </div>
 
@@ -359,9 +359,10 @@ export default function CredentialVault({
           {documents.length === 0 ? (
             <div className="text-center p-10 bg-black/20 rounded-2xl border border-white/5">
               <ShieldAlert className="h-10 w-10 text-gray-500 mx-auto mb-2" />
-              <p className="text-gray-300 font-display">Decentralized credential storage empty.</p>
-              <p className="text-xs text-gray-500 mt-1">Unlock vault with security key the select files.</p>
+              <p className="text-gray-300 font-display">Your secure document vault is empty.</p>
+              <p className="text-xs text-gray-500 mt-1">Set your vault password to start uploading and viewing files.</p>
             </div>
+
           ) : (
             documents.map((doc) => {
               const matchedInst = institutions.find(i => i.id === doc.verifiedByInstitutionId);
@@ -400,7 +401,7 @@ export default function CredentialVault({
                           className="bg-white/5 text-gray-300 text-xs px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all flex items-center gap-1"
                         >
                           <EyeOff className="h-3.5 w-3.5" />
-                          Conceal
+                          Hide File
                         </button>
                       ) : (
                         <button
@@ -408,7 +409,7 @@ export default function CredentialVault({
                           className="bg-deep-blue text-white text-xs px-3 py-1.5 rounded-lg hover:bg-deep-blue/80 transition-all flex items-center gap-1"
                         >
                           <Eye className="h-3.5 w-3.5" />
-                          Decrypt
+                          Decrypt & View
                         </button>
                       )}
 
@@ -428,7 +429,7 @@ export default function CredentialVault({
                     <div className="bg-white/1 px-5 py-2 border-b border-white/5 flex items-center justify-between text-[11px] text-gray-400">
                       <span className="flex items-center gap-1">
                         <CheckCircle className="h-3.5 w-3.5 text-green-400" />
-                        Verified Claim by: <strong className="text-white font-medium">{matchedInst.name}</strong>
+                        Issued by: <strong className="text-white font-medium">{matchedInst.name}</strong>
                       </span>
                       <span className="font-mono text-gray-600 block">{matchedInst.regCode}</span>
                     </div>
@@ -439,7 +440,7 @@ export default function CredentialVault({
                     <div className="p-5 bg-black/60 border-t border-white/5 space-y-3">
                       <div className="flex justify-between items-center bg-green-500/10 border border-green-500/20 p-2.5 rounded-xl">
                         <span className="text-xs text-green-400 flex items-center gap-1 font-mono">
-                          <CheckCircle className="h-4 w-4" /> Decryption Authenticated Successfully
+                          <CheckCircle className="h-4 w-4" /> Document Decrypted Successfully
                         </span>
                         
                         <a
@@ -447,7 +448,7 @@ export default function CredentialVault({
                           download={doc.fileName}
                           className="text-xs text-white bg-vibrant-orange hover:bg-vibrant-orange/80 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1"
                         >
-                          <Download className="h-3 w-3" /> Save File
+                          <Download className="h-3 w-3" /> Download File
                         </a>
                       </div>
 
@@ -463,13 +464,13 @@ export default function CredentialVault({
                         ) : previewData.startsWith("data:application/pdf") ? (
                           <div className="text-center p-4">
                             <FileSpreadsheet className="h-12 w-12 text-vibrant-orange mx-auto mb-2" />
-                            <p className="text-white text-xs font-semibold">PDF Secure Decrypted Package Available</p>
-                            <p className="text-[10px] text-gray-500 mt-1 max-w-xs">{doc.fileName} verified inside isolated browser frame sandbox.</p>
+                            <p className="text-white text-xs font-semibold">PDF Document Decrypted</p>
+                            <p className="text-[10px] text-gray-500 mt-1 max-w-xs">{doc.fileName} verified securely inside your browser.</p>
                           </div>
                         ) : (
                           <div className="text-center p-4">
                             <Sparkles className="h-12 w-12 text-deep-blue mx-auto mb-2" />
-                            <p className="text-white text-xs font-semibold">Certified Payload Decrypted</p>
+                            <p className="text-white text-xs font-semibold">Document Content Decrypted</p>
                             <div className="text-left font-mono text-[9px] text-gray-400 max-w-sm overflow-x-auto bg-black p-3 rounded-lg border border-white/5 mt-2">
                               {previewData.substr(0, 300)}...
                             </div>

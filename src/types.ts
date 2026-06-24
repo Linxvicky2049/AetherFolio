@@ -33,6 +33,9 @@ export interface Institution {
   authorityRank: string; // e.g. "Federal Board", "State University Council", "Industry Standard"
   signatoryName: string; // Signatory or Registrar name
   officeAddress: string;
+  ranking?: string;      // QS Global Rank, e.g. "#2 Worldwide"
+  domain?: string;
+  certMeta?: string;
 }
 
 export interface Project {
@@ -100,4 +103,5 @@ export interface StudentProfile {
   experience: ExperienceEntry[];
   encryptedDocuments: EncryptedDocument[];
   hasMasterPasswordSet: boolean;
+  skills?: string[];
 }

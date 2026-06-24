@@ -133,5 +133,6 @@ export const PRESET_STUDENT: StudentProfile = {
       verifiedByInstitutionId: "inst-gcp-05"
     }
   ],
-  hasMasterPasswordSet: false // Starts false so the user can see how to initialize their Master Password for secure decryption or insert their own!
+  hasMasterPasswordSet: false, // Starts false so the user can see how to initialize their Master Password for secure decryption or insert their own!
+  skills: ["Quantum Computing", "TensorFlow Quantum", "Rust Systems", "TypeScript", "CUDA Architecture", "Zero-Knowledge Proofs", "Cybersecurity Audit", "Embedded Systems"]
 };

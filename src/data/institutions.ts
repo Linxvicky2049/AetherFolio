@@ -12,7 +12,9 @@ export const PRESET_INSTITUTIONS: Institution[] = [
     status: "Accredited",
     authorityRank: "Western Association of Schools and Colleges (WASC)",
     signatoryName: "Dean Richard H. Shaw",
-    officeAddress: "450 Jane Stanford Way, Stanford, CA 94305, United States"
+    officeAddress: "450 Jane Stanford Way, Stanford, CA 94305, United States",
+    ranking: "#2 QS Global Rank",
+    domain: "stanford.edu"
   },
   {
     id: "inst-mit-02",
@@ -25,7 +27,9 @@ export const PRESET_INSTITUTIONS: Institution[] = [
     status: "Accredited",
     authorityRank: "New England Commission of Higher Education (NECHE)",
     signatoryName: "Registrar Elizabeth Young",
-    officeAddress: "77 Massachusetts Ave, Cambridge, MA 02139, United States"
+    officeAddress: "77 Massachusetts Ave, Cambridge, MA 02139, United States",
+    ranking: "#1 QS Global Rank",
+    domain: "mit.edu"
   },
   {
     id: "inst-google-03",
@@ -38,7 +42,8 @@ export const PRESET_INSTITUTIONS: Institution[] = [
     status: "Verified Enterprise",
     authorityRank: "SEC Registered Global Tech Enterprise",
     signatoryName: "VP of People Operations, Fiona Kelly",
-    officeAddress: "1600 Amphitheatre Pkwy, Mountain View, CA 94043, United States"
+    officeAddress: "1600 Amphitheatre Pkwy, Mountain View, CA 94043, United States",
+    ranking: "Fortune #1 Web Core Tech"
   },
   {
     id: "inst-openai-04",
@@ -51,7 +56,8 @@ export const PRESET_INSTITUTIONS: Institution[] = [
     status: "Verified Enterprise",
     authorityRank: "AI Research & Commercial Deployment Corp",
     signatoryName: "Head of People Operations, Sarah Davis",
-    officeAddress: "3180 18th St, San Francisco, CA 94110, United States"
+    officeAddress: "3180 18th St, San Francisco, CA 94110, United States",
+    ranking: "Industry Pioneer Tier 1"
   },
   {
     id: "inst-gcp-05",
@@ -77,7 +83,9 @@ export const PRESET_INSTITUTIONS: Institution[] = [
     status: "Accredited",
     authorityRank: "UK Office for Students Approved",
     signatoryName: "Registrar Dr. Gillian Easton",
-    officeAddress: "University Offices, Wellington Square, Oxford, OX1 2JD, United Kingdom"
+    officeAddress: "University Offices, Wellington Square, Oxford, OX1 2JD, United Kingdom",
+    ranking: "#3 QS Global Rank",
+    domain: "ox.ac.uk"
   },
   {
     id: "inst-microsoft-07",

@@ -6,18 +6,95 @@ import GlassCard from "./components/GlassCard";
 import InstitutionLookup from "./components/InstitutionLookup";
 import CredentialVault from "./components/CredentialVault";
 import InteractiveShowcase from "./components/InteractiveShowcase";
+import QRBadgeScanner from "./components/QRBadgeScanner";
+import EngagementChart from "./components/EngagementChart";
+import PrintPDFModal from "./components/PrintPDFModal";
+import CyberAuthGateway from "./components/CyberAuthGateway";
+import GeoDimensionalCanvas from "./components/GeoDimensionalCanvas";
+import SecureResumeHub from "./components/SecureResumeHub";
 
 import { 
   User, Briefcase, GraduationCap, ShieldCheck, Mail, Link, Phone, MapPin, 
   Share2, Linkedin, Github, Twitter, Layers, Save, CheckCircle, Copy, 
   HelpCircle, MessageSquare, Award, ArrowUpRight, MonitorPlay, AlertCircle, FileText, Send,
-  Trash2, X
+  Trash2, X, Sun, Moon, Globe, Compass, Fingerprint
 } from "lucide-react";
 
 export default function App() {
+  // Theme State
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sessionJWT, setSessionJWT] = useState<string | null>(null);
+
   // Database States
   const [profile, setProfile] = useState<StudentProfile>(PRESET_STUDENT);
   const [institutions, setInstitutions] = useState<Institution[]>(PRESET_INSTITUTIONS);
+
+  const fetchProfile = async (token: string) => {
+    try {
+      const res = await fetch("/api/profile", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profile) {
+          setProfile(data.profile);
+          setEditedName(data.profile.fullName);
+          setEditedHeadline(data.profile.headline);
+          setEditedBio(data.profile.bio);
+          setEditedLocation(data.profile.location);
+          setEditedSocials(data.profile.socials);
+        }
+      } else if (res.status === 401) {
+        localStorage.removeItem("aether_holographic_session");
+        setIsAuthenticated(false);
+        setAppMode("authGateway");
+      }
+    } catch (err) {
+      console.error("Error fetching profile from backend:", err);
+    }
+  };
+
+  const syncProfileToBackend = async (newProfile: StudentProfile) => {
+    const token = sessionJWT || (() => {
+      const sess = localStorage.getItem("aether_holographic_session");
+      if (sess) {
+        try {
+          return JSON.parse(sess).jwt;
+        } catch (e) {}
+      }
+      return null;
+    })();
+
+    if (!token) return;
+
+    try {
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ profile: newProfile })
+      });
+    } catch (err) {
+      console.error("Error syncing profile to backend:", err);
+    }
+  };
+
+  const updateProfileAndSync = (updater: StudentProfile | ((prev: StudentProfile) => StudentProfile)) => {
+    setProfile(prev => {
+      const updated = typeof updater === "function" ? updater(prev) : updater;
+      syncProfileToBackend(updated);
+      return updated;
+    });
+  };
+
   const [messages, setMessages] = useState<ContactMessage[]>([
     {
       id: "msg-01",
@@ -32,9 +109,9 @@ export default function App() {
   ]);
 
   // Routing State
-  // Modes: "dashboard" (management/editing), "publicView" (the public read-only page), "recruiterView" (recruiter audits)
-  const [appMode, setAppMode] = useState<"dashboard" | "publicView" | "recruiterView">("dashboard");
-  const [activeTab, setActiveTab] = useState<"profile" | "projects" | "vault" | "institutions">("profile");
+  // Modes: "dashboard" (management/editing), "publicView" (the public read-only page), "recruiterView" (recruiter audits), "authGateway" (futuristic authorization lock)
+  const [appMode, setAppMode] = useState<"dashboard" | "publicView" | "recruiterView" | "authGateway">("authGateway");
+  const [activeTab, setActiveTab] = useState<"geodimensional" | "secure-resume" | "profile" | "projects" | "vault" | "institutions">("geodimensional");
   
   // URL Share Code alerts
   const [shareLinkCopied, setShareLinkCopied] = useState<string | null>(null);
@@ -79,6 +156,7 @@ export default function App() {
     content: ""
   });
   const [visitorMessageStatus, setVisitorMessageStatus] = useState<string | null>(null);
+  const [publicPageLayout, setPublicPageLayout] = useState<"standard" | "cv-resume">("cv-resume");
 
   /**
    * SERIALIZATION MECHANISM (Real base64 transport structure is loaded here)
@@ -123,9 +201,9 @@ export default function App() {
     }
   };
 
-  // Synchronize dynamic URL structures
+  // Synchronize dynamic URL structures & verify authentication
   useEffect(() => {
-    const handleUrlChange = () => {
+    const handleUrlChange = async () => {
       const hash = window.location.hash || "";
       const searchParams = new URLSearchParams(window.location.search);
       const dataToken = searchParams.get("data") || hash.includes("data=") ? (hash.split("data=")[1] || searchParams.get("data")) : null;
@@ -134,17 +212,39 @@ export default function App() {
         loadStateFromToken(dataToken);
         if (hash.includes("#/verify") || window.location.pathname.includes("/verify")) {
           setAppMode("recruiterView");
+        } else if (hash.includes("#/security") || window.location.pathname.includes("/security")) {
+          setAppMode("authGateway");
         } else {
           setAppMode("publicView");
         }
+        return;
+      }
+
+      if (hash.includes("#/view")) {
+        setAppMode("publicView");
+      } else if (hash.includes("#/verify")) {
+        setAppMode("recruiterView");
+      } else if (hash.includes("#/security")) {
+        setAppMode("authGateway");
       } else {
-        // Fallback or dashboard
-        if (hash.includes("#/view")) {
-          setAppMode("publicView");
-        } else if (hash.includes("#/verify")) {
-          setAppMode("recruiterView");
+        // Verify local storage session
+        const localSess = localStorage.getItem("aether_holographic_session");
+        if (localSess) {
+          try {
+            const parsed = JSON.parse(localSess);
+            if (parsed && parsed.jwt) {
+              setSessionJWT(parsed.jwt);
+              setIsAuthenticated(true);
+              setAppMode("dashboard");
+              await fetchProfile(parsed.jwt);
+            } else {
+              setAppMode("authGateway");
+            }
+          } catch (e) {
+            setAppMode("authGateway");
+          }
         } else {
-          setAppMode("dashboard");
+          setAppMode("authGateway");
         }
       }
     };
@@ -155,9 +255,13 @@ export default function App() {
   }, []);
 
   // Update URL function
-  const navigateToMode = (mode: "dashboard" | "publicView" | "recruiterView", includeToken: boolean = false) => {
+  const navigateToMode = (mode: "dashboard" | "publicView" | "recruiterView" | "authGateway", includeToken: boolean = false) => {
     const token = includeToken ? generateShareToken() : "";
-    const prefix = mode === "recruiterView" ? "#/verify" : mode === "publicView" ? "#/view" : "#/dashboard";
+    let prefix = "#/dashboard";
+    if (mode === "recruiterView") prefix = "#/verify";
+    else if (mode === "publicView") prefix = "#/view";
+    else if (mode === "authGateway") prefix = "#/security";
+    
     const suffix = token ? `?data=${token}` : "";
     
     // Set appropriate app state
@@ -185,7 +289,7 @@ export default function App() {
   };
 
   const handleUpdateDocuments = (updatedDocs: EncryptedDocument[]) => {
-    setProfile(prev => ({
+    updateProfileAndSync(prev => ({
       ...prev,
       encryptedDocuments: updatedDocs,
       hasMasterPasswordSet: true
@@ -193,7 +297,7 @@ export default function App() {
   };
 
   const handleUpdateProjects = (updatedProjects: Project[]) => {
-    setProfile(prev => ({
+    updateProfileAndSync(prev => ({
       ...prev,
       projects: updatedProjects
     }));
@@ -201,7 +305,7 @@ export default function App() {
 
   const handleSavePersonalInfo = (e: React.FormEvent) => {
     e.preventDefault();
-    setProfile(prev => ({
+    updateProfileAndSync(prev => ({
       ...prev,
       fullName: editedName,
       headline: editedHeadline,
@@ -216,7 +320,7 @@ export default function App() {
     e.preventDefault();
     if (!newEdu.degree || !newEdu.startYear || !newEdu.endYear) return;
     
-    setProfile(prev => ({
+    updateProfileAndSync(prev => ({
       ...prev,
       education: [
         ...prev.education,
@@ -247,7 +351,7 @@ export default function App() {
     e.preventDefault();
     if (!newExp.role || !newExp.startDate || !newExp.endDate) return;
 
-    setProfile(prev => ({
+    updateProfileAndSync(prev => ({
       ...prev,
       experience: [
         ...prev.experience,
@@ -274,7 +378,7 @@ export default function App() {
 
   const handleRemoveEdu = (id: string) => {
     if (confirm("Remove educational history record?")) {
-      setProfile(prev => ({
+      updateProfileAndSync(prev => ({
         ...prev,
         education: prev.education.filter(e => e.id !== id)
       }));
@@ -283,7 +387,7 @@ export default function App() {
 
   const handleRemoveExp = (id: string) => {
     if (confirm("Remove experience history record?")) {
-      setProfile(prev => ({
+      updateProfileAndSync(prev => ({
         ...prev,
         experience: prev.experience.filter(e => e.id !== id)
       }));
@@ -341,7 +445,7 @@ export default function App() {
   const trustScore = calculateTrustIntegrity();
 
   return (
-    <div className="relative min-h-screen bg-[#060608] text-white overflow-x-hidden font-sans">
+    <div className={`relative min-h-screen bg-[#060608] text-white overflow-x-hidden font-sans ${theme}`}>
       
       {/* 3D FLOATING WATER-GLASS SPHERES BACKGROUND LAYER */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -369,82 +473,151 @@ export default function App() {
       </div>
 
       {/* HEADER BAR AND BRANDING */}
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-[#060608]/75 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3.5 flex items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-deep-blue to-vibrant-orange p-[1px] glow-blue">
-              <div className="w-full h-full rounded-xl bg-sleek-black flex items-center justify-center">
-                <ShieldCheck className="h-5.5 w-5.5 text-vibrant-orange" />
+      {appMode !== "authGateway" && (
+        <header className={`sticky top-0 z-40 border-b transition-all duration-300 ${theme === "light" ? "border-stone-200 bg-white/80" : "border-white/5 bg-[#060608]/75"} backdrop-blur-md`}>
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-3.5 flex items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-deep-blue to-vibrant-orange p-[1px] glow-blue">
+                <div className="w-full h-full rounded-xl bg-sleek-black flex items-center justify-center">
+                  <ShieldCheck className="h-5.5 w-5.5 text-vibrant-orange" />
+                </div>
+              </div>
+              <div>
+                <span className={`font-display font-black text-sm tracking-wider uppercase block ${theme === "light" ? "text-stone-900" : "bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent"}`}>
+                  AetherFolio
+                </span>
+                <span className="text-[10px] font-mono text-gray-400 block uppercase tracking-widest">
+                  E2E Trusted Credentials Gateway
+                </span>
               </div>
             </div>
-            <div>
-              <span className="font-display font-black text-sm tracking-wider uppercase bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent block">
-                AetherFolio
-              </span>
-              <span className="text-[10px] font-mono text-gray-400 block uppercase tracking-widest">
-                E2E Trusted Credentials Gateway
-              </span>
+
+            <div className="flex items-center gap-4">
+              {/* Theme Toggle Button */}
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className={`p-2 rounded-xl border transition-all duration-300 hover:scale-105 ${
+                  theme === "light"
+                    ? "bg-white border-stone-200 text-stone-700 shadow-sm"
+                    : "bg-white/5 border-white/10 text-gray-300 hover:text-white"
+                }`}
+                title={theme === "light" ? "Switch to Deep Space" : "Switch to Academic Paper"}
+              >
+                {theme === "light" ? <Moon className="h-4 w-4 text-blue-700" /> : <Sun className="h-4 w-4 text-vibrant-orange" />}
+              </button>
+
+              {/* Proper Navigation Tabs for Logged In User */}
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+                    <button
+                      onClick={() => navigateToMode("dashboard")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                        appMode === "dashboard"
+                          ? "bg-cyan-500/10 text-[#00f0ff] border border-cyan-500/20 font-bold"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Control Terminal
+                    </button>
+                    <button
+                      onClick={() => navigateToMode("publicView")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                        appMode === "publicView"
+                          ? "bg-vibrant-orange/15 text-vibrant-orange border border-vibrant-orange/30 font-bold"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Public View
+                    </button>
+                    <button
+                      onClick={() => navigateToMode("recruiterView")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                        appMode === "recruiterView"
+                          ? "bg-bold-red/15 text-bold-red border border-bold-red/30 font-bold animate-pulse"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Recruiter Hub
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 pl-2 border-l border-white/10">
+                    <div className="hidden md:flex flex-col items-end">
+                      <span className="text-xs font-bold text-white leading-none">{profile.fullName}</span>
+                      <span className="text-[9px] font-mono text-gray-400 mt-0.5 leading-none">{profile.email}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("aether_holographic_session");
+                        setIsAuthenticated(false);
+                        setAppMode("authGateway");
+                        window.location.hash = "#/security";
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/15 text-xs font-bold transition-all"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* Guest view action trigger */
+                <button
+                  onClick={() => {
+                    setAppMode("authGateway");
+                    window.location.hash = "#/security";
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-bold transition-all flex items-center gap-1.5"
+                >
+                  <Fingerprint className="h-3.5 w-3.5" />
+                  Access Portal Gateway
+                </button>
+              )}
             </div>
           </div>
-
-          {/* Quick-toggle mode buttons inside Header */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigateToMode("dashboard")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                appMode === "dashboard"
-                  ? "bg-deep-blue/20 text-white border border-deep-blue/40"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Control Terminal
-            </button>
-            <button
-              onClick={() => navigateToMode("publicView")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                appMode === "publicView"
-                  ? "bg-vibrant-orange/15 text-vibrant-orange border border-vibrant-orange/30"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Public View
-            </button>
-            <button
-              onClick={() => navigateToMode("recruiterView")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                appMode === "recruiterView"
-                  ? "bg-bold-red/15 text-bold-red border border-bold-red/30 animate-pulse"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Recruiter Hub
-            </button>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* MAIN CONTAINER LAYOUT */}
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-10 space-y-8">
         
-        {/* TRUST LANDING METRICS AND LINKING SHIELD SECTION */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {appMode === "authGateway" ? (
+          <CyberAuthGateway 
+            onUnlockSuccess={(name, email, token) => {
+              setIsAuthenticated(true);
+              setAppMode("dashboard");
+              window.location.hash = "#/dashboard";
+              if (token) {
+                fetchProfile(token);
+              }
+            }}
+            onBypassUnlock={() => {
+              setIsAuthenticated(true);
+              setAppMode("dashboard");
+              window.location.hash = "#/dashboard";
+            }}
+          />
+        ) : (
+          <>
+            {/* TRUST LANDING METRICS AND LINKING SHIELD SECTION */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-3 bg-gradient-to-r from-sleek-black/80 via-sleek-black/40 to-transparent p-6 rounded-2xl border border-white/5 flex flex-col justify-between gap-6">
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="text-[9px] font-bold tracking-widest text-deep-blue uppercase px-2.5 py-1 rounded bg-deep-blue/10 border border-deep-blue/15">
-                  Quantum Ledger Link
+                  Verified Credentials
                 </span>
                 <span className="text-[9px] font-bold tracking-widest text-vibrant-orange uppercase px-2.5 py-1 rounded bg-vibrant-orange/10 border border-vibrant-orange/15">
-                  PBKDF2 Secured
+                  Encrypted Vault
                 </span>
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-extrabold tracking-tight mt-3 text-white">
-                {appMode === "dashboard" && "Your Encrypted Portability Ledger"}
+                {appMode === "dashboard" && "Your Verified Student Portfolio"}
                 {appMode === "publicView" && `${profile.fullName}'s Verified Portfolio`}
                 {appMode === "recruiterView" && `Employer Audit: ${profile.fullName}`}
               </h1>
               <p className="text-gray-400 text-sm mt-2 max-w-2xl">
-                This academic ledger consolidates student registrations and credential document indices. Built with full in-browser WebCrypto E2E protection, securing your identity records for high-frequency recruitment channels.
+                This secure platform consolidates your academic credentials, verified student records, and resumes. Protected by local in-browser encryption, your profile is ready to share securely with top employers.
               </p>
             </div>
 
@@ -466,6 +639,14 @@ export default function App() {
                   >
                     <Send className="h-3.5 w-3.5 text-vibrant-orange" />
                     {shareLinkCopied === "recruiterView" ? "Copied Recruiter Link!" : "Copy Recruiter Audit URL"}
+                  </button>
+
+                  <button
+                    onClick={() => setIsPrintModalOpen(true)}
+                    className="flex items-center gap-2 bg-gradient-to-r from-deep-blue to-[#003dbd] hover:brightness-110 text-xs font-bold text-white py-2 px-3.5 rounded-xl border border-white/10 transition-all shadow-md shadow-deep-blue/15"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-yellow-500" />
+                    Download as PDF
                   </button>
                 </>
               ) : (
@@ -521,6 +702,28 @@ export default function App() {
                 </div>
                 
                 <div className="p-2 space-y-1">
+                  <button
+                    onClick={() => setActiveTab("geodimensional")}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-left ${
+                      activeTab === "geodimensional"
+                        ? "bg-deep-blue text-white shadow-lg shadow-deep-blue/20"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Globe className="h-4 w-4" />
+                    3D Geo-Dimensional Display
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("secure-resume")}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-left ${
+                      activeTab === "secure-resume"
+                        ? "bg-deep-blue text-white shadow-lg shadow-deep-blue/20"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <FileText className="h-4 w-4 text-emerald-400" />
+                    Secure CV & Resume
+                  </button>
                   <button
                     onClick={() => setActiveTab("profile")}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-left ${
@@ -604,9 +807,31 @@ export default function App() {
             {/* TAB CONTENT: Control dashboard panels */}
             <div className="lg:col-span-3 space-y-6">
               
+              {/* TAB: 3D Geo-Dimensional Display Centerpiece */}
+              {activeTab === "geodimensional" && (
+                <div className="space-y-6">
+                  <GeoDimensionalCanvas />
+                </div>
+              )}
+
+              {/* TAB: Secure Verifiable CV & Resume */}
+              {activeTab === "secure-resume" && (
+                <SecureResumeHub
+                  profile={profile}
+                  institutions={institutions}
+                  onUpdateProfile={(updated) => setProfile(updated)}
+                  onShare={() => handleCopyLink("publicView")}
+                  shareUrl={`${window.location.origin}${window.location.pathname}#/view?data=${generateShareToken()}`}
+                  onAddInstitution={handleAddCustomInstitution}
+                />
+              )}
+
               {/* TAB: Identity Dossier (Student Profiles, Education, Experiences) */}
               {activeTab === "profile" && (
                 <div className="space-y-6">
+                  
+                  {/* Recharts Student Engagement Dashboard */}
+                  <EngagementChart theme={theme} />
                   
                   {/* Student Dossier bio editor card */}
                   <GlassCard glowColor="blue">
@@ -900,7 +1125,38 @@ export default function App() {
         {/* VIEW MODE: Public read-only page for recruiters */}
         {/* ========================================== */}
         {appMode === "publicView" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="space-y-6 w-full">
+            {/* PUBLIC VIEW SELECTION DECK */}
+            <div className="bg-[#101116]/80 p-4 border border-white/5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="space-y-0.5">
+                <span className="text-[9px] text-vibrant-orange font-mono uppercase font-bold block">Secure Gateway Viewport</span>
+                <h3 className="font-display font-black text-white text-sm">Select Document Layout Model</h3>
+              </div>
+              
+              <div className="flex gap-2 p-1 bg-black/40 border border-white/5 rounded-xl text-xs font-mono">
+                <button
+                  onClick={() => setPublicPageLayout("cv-resume")}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${publicPageLayout === "cv-resume" ? "bg-emerald-600 text-white font-bold" : "text-gray-500 hover:text-gray-300"}`}
+                >
+                  CV & Resume View
+                </button>
+                <button
+                  onClick={() => setPublicPageLayout("standard")}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${publicPageLayout === "standard" ? "bg-deep-blue text-white font-bold" : "text-gray-500 hover:text-gray-300"}`}
+                >
+                  Detailed Profile View
+                </button>
+              </div>
+            </div>
+
+            {publicPageLayout === "cv-resume" ? (
+              <SecureResumeHub
+                profile={profile}
+                institutions={institutions}
+                isReadOnly={true}
+              />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* LEFT SIDE BAR (Dossier detail and verification status) */}
             <div className="lg:col-span-4 space-y-6">
@@ -916,7 +1172,7 @@ export default function App() {
                   )}
 
                   <div className="text-[9px] bg-green-500/10 text-green-400 px-3 py-1 rounded-full uppercase tracking-widest font-bold border border-green-500/20 mb-3 flex items-center gap-1">
-                    <ShieldCheck className="h-3.5 w-3.5" /> SECURE PUBLIC LEDGER
+                    <ShieldCheck className="h-3.5 w-3.5" /> VERIFIED PUBLIC PROFILE
                   </div>
 
                   <h2 className="font-display font-extrabold text-white text-2xl tracking-tight">
@@ -1166,6 +1422,8 @@ export default function App() {
               </div>
             </div>
           </div>
+            )}
+          </div>
         )}
 
         {/* ========================================== */}
@@ -1211,6 +1469,11 @@ export default function App() {
                 </div>
               </div>
             </GlassCard>
+
+            {/* Trust Registrar Badge Verification Dynamic Scanner */}
+            <div className="space-y-4 bg-sleek-black/30 p-1.5 rounded-2xl border border-white/5">
+              <QRBadgeScanner institutions={institutions} theme={theme} />
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
@@ -1268,6 +1531,8 @@ export default function App() {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
 
       </main>
@@ -1468,6 +1733,14 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Print Transcripts & Dynamic Credentials PDF Generator */}
+      <PrintPDFModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        profile={profile}
+        institutions={institutions}
+      />
 
       {/* FOOTER */}
       <footer className="border-t border-white/5 bg-[#060608]/90 py-8 text-center text-xs text-gray-500">

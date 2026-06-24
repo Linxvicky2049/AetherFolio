@@ -70,6 +70,165 @@
   }
 }
 
+/* ======================================================= */
+/* HIGH-CONTRAST ACADEMIC PAPER LIGHT THEME OVERRIDES     */
+/* ======================================================= */
+
+.light {
+  background-color: #FAF8F5 !important;
+  color: #1c1917 !important;
+}
+
+/* Base elements in Light Theme */
+.light h1, .light h2, .light h3, .light h4, .light h5, .light h6, .light .text-white {
+  color: #1c1917 !important;
+}
+
+.light p, .light .text-gray-300, .light .text-gray-400 {
+  color: #44403c !important;
+}
+
+.light .text-gray-500, .light .text-gray-600 {
+  color: #78716c !important;
+}
+
+/* Glass cards and translucent panels */
+.light .glass,
+.light [class*="bg-sleek-black"],
+.light [class*="bg-black/"],
+.light .bg-white\/2,
+.light .bg-white\/3,
+.light .bg-white\/5 {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  border-color: #e7e5e4 !important;
+  color: #1c1917 !important;
+  box-shadow: 0 8px 24px rgba(120, 113, 108, 0.05) !important;
+  text-shadow: none !important;
+}
+
+.light .bg-sleek-black\/60,
+.light .bg-sleek-black\/95 {
+  background-color: #ffffff !important;
+  border-color: #d6d3d1 !important;
+}
+
+.light .bg-black {
+  background-color: #FAF8F5 !important;
+  color: #191716 !important;
+  border-color: #d6d3d1 !important;
+}
+
+.light .glass-orange {
+  background-color: rgba(255, 102, 0, 0.03) !important;
+  border-color: rgba(255, 102, 0, 0.2) !important;
+}
+
+.light .glass-red {
+  background-color: rgba(230, 25, 25, 0.03) !important;
+  border-color: rgba(230, 25, 25, 0.2) !important;
+}
+
+.light .glass-blue {
+  background-color: rgba(0, 77, 197, 0.03) !important;
+  border-color: rgba(0, 77, 197, 0.2) !important;
+}
+
+.light .glass-reflective {
+  background: #ffffff !important;
+  border-color: #d6d3d1 !important;
+}
+
+/* Input Fields & Form controls */
+.light input,
+.light select,
+.light textarea {
+  background-color: #FAF8F5 !important;
+  color: #1c1917 !important;
+  border-color: #d6d3d1 !important;
+}
+
+.light input:focus,
+.light select:focus,
+.light textarea:focus {
+  border-color: #004dc5 !important;
+}
+
+.light option {
+  background-color: #ffffff !important;
+  color: #1c1917 !important;
+}
+
+/* Status markers under light theme */
+.light .bg-white\/5.text-gray-300 {
+  background-color: #f5f2eb !important;
+  color: #292524 !important;
+  border-color: #e7e5e4 !important;
+}
+
+/* Modals overlays and background dimmers */
+.light .fixed.bg-sleek-black\/80,
+.light .fixed.bg-\[\#060608\]\/85 {
+  background-color: rgba(68, 64, 60, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.light .fixed .bg-sleek-black {
+  background-color: #ffffff !important;
+  border-color: #d6d3d1 !important;
+}
+
+/* Scrollbars overrides in Light Theme */
+.light ::-webkit-scrollbar-track {
+  background: #FAF8F5 !important;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(120, 113, 108, 0.25) !important;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #004dc5 !important;
+}
+
+/* ======================================================= */
+/* PRINT LAYOUT SPECIFICATIONS FOR PRINTING PROFILES TO PDF */
+/* ======================================================= */
+
+@media print {
+  body, .light, #root, select, input {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  header, 
+  nav, 
+  button, 
+  .theme-switcher, 
+  .no-print,
+  [class*="backdrop-blur"],
+  .fixed,
+  iframe {
+    display: none !important;
+  }
+  
+  main, .print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .glass, [class*="bg-sleek-black"], .bg-white\/2 {
+    background: #ffffff !important;
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+}
+
 @keyframes float {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
